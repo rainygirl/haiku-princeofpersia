@@ -4,7 +4,7 @@
 
 [English](README.md) | [日本語](README.ja.md)
 
-Prince of Persia(1990)를 Haiku 네이티브 앱으로 실행합니다. 밑에 DOS 에뮬레이터도
+Prince of Persia(1990)를 Haiku 네이티브 앱으로 실행합니다. DOS 에뮬레이터도
 SDL도 없습니다. 게임은 평범한 Haiku 프로세스로 돌아갑니다. 화면은 BWindow,
 소리는 BSoundPlayer, 입력은 Haiku 키 코드로 처리합니다.
 
