@@ -17,6 +17,7 @@
 #include <Locker.h>
 #include <Message.h>
 #include <OS.h>
+#include <FindDirectory.h>
 #include <Screen.h>
 #include <View.h>
 #include <Window.h>
@@ -25,6 +26,7 @@
 #include <string>
 
 #include <limits.h>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -40,6 +42,44 @@ bool has_data_dir(const std::string& dir) {
 	return stat(p.c_str(), &st) == 0 && S_ISDIR(st.st_mode);
 }
 
+// The game's own folder when it holds data/ and can be written to: a source
+// tree, or an install made with install.sh. Installed from a package, the
+// folder is read-only and has no data/ -- the DOS .DAT files are not ours to
+// ship -- while the engine writes its settings, save game, replays and
+// screenshots next to the data. Then play from a folder of the user's own,
+// ~/config/settings/PrinceOfPersia, which is where the .DAT files go
+// (data/ inside it), seeded with the packaged default settings.
+void enter_user_game_directory(const std::string& exeDir) {
+	char settings[PATH_MAX];
+	if (find_directory(B_USER_SETTINGS_DIRECTORY, -1, true, settings,
+			sizeof(settings)) != B_OK)
+		return;
+	std::string home = std::string(settings) + "/PrinceOfPersia";
+	mkdir(home.c_str(), 0755);
+	struct stat st;
+	// A read-only folder that does carry data/ is linked rather than copied.
+	std::string data = home + "/data";
+	if (lstat(data.c_str(), &st) != 0 && has_data_dir(exeDir))
+		symlink((exeDir + "/data").c_str(), data.c_str());
+	std::string ini = home + "/SDLPoP.ini";
+	if (stat(ini.c_str(), &st) != 0) {
+		FILE* in = fopen((exeDir + "/SDLPoP.ini").c_str(), "rb");
+		FILE* out = in != NULL ? fopen(ini.c_str(), "wb") : NULL;
+		if (in != NULL && out != NULL) {
+			char buffer[4096];
+			size_t n;
+			while ((n = fread(buffer, 1, sizeof(buffer), in)) > 0)
+				fwrite(buffer, 1, n, out);
+		}
+		if (out != NULL) fclose(out);
+		if (in != NULL) fclose(in);
+	}
+	mkdir((home + "/mods").c_str(), 0755);
+	mkdir((home + "/replays").c_str(), 0755);
+	mkdir((home + "/screenshots").c_str(), 0755);
+	chdir(home.c_str());
+}
+
 __attribute__((constructor))
 void enter_game_directory() {
 	image_info info;
@@ -51,9 +91,17 @@ void enter_game_directory() {
 		std::string dir = exe.substr(0, exe.rfind('/'));
 		if (dir.empty()) return;
 		if (has_data_dir(".")) return;
-		if (has_data_dir(dir)) { chdir(dir.c_str()); return; }
+		if (has_data_dir(dir) && access(dir.c_str(), W_OK) == 0) {
+			chdir(dir.c_str());
+			return;
+		}
 		std::string parent = dir.substr(0, dir.rfind('/'));
-		if (!parent.empty() && has_data_dir(parent)) chdir(parent.c_str());
+		if (!parent.empty() && has_data_dir(parent)
+			&& access(parent.c_str(), W_OK) == 0) {
+			chdir(parent.c_str());
+			return;
+		}
+		enter_user_game_directory(dir);
 		return;
 	}
 }

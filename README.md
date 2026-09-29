@@ -57,6 +57,20 @@ To run it from the source tree without installing, start
 `build/PrinceOfPersia`. The program finds `data/` next to itself or one level
 up.
 
+### arm64 (RENKU)
+
+A ready-built package is on pkgman.rainygirl.com (the RENKU arm64 image has the
+repository already):
+
+```sh
+pkgman install princeofpersia
+mkdir -p ~/config/settings/PrinceOfPersia/data
+cp /path/to/PRINCE/*.DAT ~/config/settings/PrinceOfPersia/data/
+```
+
+The package holds only the program, not the game data. Settings, the save game,
+replays and screenshots are kept in `~/config/settings/PrinceOfPersia`.
+
 ## Controls
 
 The keys of the DOS version work as they did there.

@@ -1,3 +1,5 @@
 build/
 data/
 .DS_Store
+# cross-built binaries (pkgman-repo/scripts/cross-arm64.sh)
+dist/

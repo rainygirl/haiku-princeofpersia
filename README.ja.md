@@ -55,6 +55,20 @@ cp /path/to/PRINCE/*.DAT data/
 インストールせずにソースフォルダから動かすには `build/PrinceOfPersia` を実行して
 ください。プログラムは自分の隣か一つ上の階層から `data/` を探します。
 
+### arm64 (RENKU)
+
+ビルド済みのパッケージが pkgman.rainygirl.com にあります(RENKU arm64 イメージには
+リポジトリが登録済みです)。
+
+```sh
+pkgman install princeofpersia
+mkdir -p ~/config/settings/PrinceOfPersia/data
+cp /path/to/PRINCE/*.DAT ~/config/settings/PrinceOfPersia/data/
+```
+
+パッケージにはプログラムだけが入り、ゲームデータは含まれません。設定、セーブ、
+リプレイ、スクリーンショットは `~/config/settings/PrinceOfPersia` に保存されます。
+
 ## 操作
 
 DOS 版のキーはそのまま使えます。
