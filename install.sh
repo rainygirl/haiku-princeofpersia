@@ -57,12 +57,14 @@ quit application/x-vnd.rainygirl-princeofpersia >/dev/null 2>&1 || true
 mkdir -p "$APPS_DIR" "$MENU_DIR" "$DESKTOP_DIR"
 cp -f "build/$APP" "$APPS_DIR/$APP"
 
-# Tracker reads the icon from the file's attributes, not from the resources the
-# linker wrote into the binary. mimeset is meant to copy one to the other, but
-# recent Haiku no longer sniffs ELF files, so a freshly installed app shows a
-# blank document icon until resattr does the copy.
+# Tracker draws a blank document icon unless two attributes are right, and cp
+# sets neither: recent Haiku no longer sniffs ELF files, so the copy inherits
+# BEOS:TYPE "application/octet-stream" and carries no BEOS:ICON at all. resattr
+# copies the icon out of the binary's own resources, and BEOS:TYPE has to say
+# this is an executable.
 resattr -O -o "$APPS_DIR/$APP" "$APPS_DIR/$APP" 2>/dev/null \
 	|| echo "install.sh: resattr failed; the icon may show as a blank document" >&2
+addattr -t mime BEOS:TYPE application/x-vnd.be-elfexecutable "$APPS_DIR/$APP" 2>/dev/null || true
 cp -r data "$APPS_DIR/"
 # The settings file is the user's once installed; only put the default in place.
 [ -f "$APPS_DIR/SDLPoP.ini" ] || cp SDLPoP.ini "$APPS_DIR/"
